@@ -54,3 +54,37 @@ public:
         return max(first[0][n-1],second[0][n-1]);
     }
 };
+/**********************************************************************************************
+ 考虑记忆化搜索，dp[l][r]表示l..r区间内取纸牌，先手的最大收益。
+每个人要让自己收益最大，也就是让对手收益最小。
+收益是l..r区间内所有纸牌的和 - 我取了之后剩下区间对手的收益。
+ ***********************************************************************************************/
+ class Cards {
+public:
+    const static int size = 300;
+    int sums[size] = {0};
+    int dp[size][size];
+ 
+    int dfs_cache(const int &l, const int &r, const vector<int> &cards){
+        if(l==r){
+            dp[l][r] = cards[l];
+        }
+        if(dp[l][r]!=-1){
+            return dp[l][r];
+        }
+        int all_sum = sums[r] - (l == 0 ? 0:sums[l-1]);
+        dp[l][r] = all_sum - min(dfs_cache(l+1, r, cards), dfs_cache(l, r-1, cards));
+        return dp[l][r];
+    }
+ 
+    int cardGame(vector<int> A, int n) {
+        // write code here
+        sums[0] = A[0];
+        for(int i=1; i<n;i++){
+            sums[i] = sums[i-1] + A[i];
+        }
+        memset(dp, -1, sizeof(dp));
+        int first_profit = dfs_cache(0, n-1, A);
+        return max(first_profit, sums[n-1]-first_profit);
+    }
+};
